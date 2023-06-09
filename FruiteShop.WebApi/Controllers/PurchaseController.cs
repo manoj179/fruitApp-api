@@ -1,6 +1,6 @@
 ﻿using FruiteShop.Abstraction.Interfaces;
-using FruiteShop.Abstraction.Models;
 using FruiteShop.Abstraction.Models.Common;
+using FruiteShop.Abstraction.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,21 +8,21 @@ namespace FruiteShop.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class FruiteController : ControllerBase
+    public class PurchaseController : ControllerBase
     {
-        private readonly IFruite fruiteService;
+        private readonly IPurchase purchaseService;
 
-        public FruiteController(IFruite fruiteService)
+        public PurchaseController(IPurchase purchaseService)
         {
-            this.fruiteService = fruiteService;
+            this.purchaseService = purchaseService;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetFruitesList()
+        [HttpGet("GetOrderId/{id}")]
+        public async Task<IActionResult> GetOrderId(int id)
         {
             try
             {
-                return Ok(await fruiteService.GetFruitesList());
+                return Ok(await purchaseService.GetPurchaseByID(id));
             }
             catch (Exception ex)
             {
@@ -30,12 +30,12 @@ namespace FruiteShop.WebApi.Controllers
             }
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetFruiteById(int id)
+        [HttpGet("GetOrderByUserId/{userId}")]
+        public async Task<IActionResult> GetOrderByUserId(int userId)
         {
             try
             {
-                return Ok(await fruiteService.GetFruiteById(id));
+                return Ok(await purchaseService.GetPurchaseListByUserID(userId));
             }
             catch (Exception ex)
             {
@@ -43,12 +43,12 @@ namespace FruiteShop.WebApi.Controllers
             }
         }
 
-        [HttpPost()]
-        public async Task<IActionResult> AddFruite([FromForm]Fruite data)
+        [HttpGet("addPurchase/{cartId}")]
+        public async Task<IActionResult> AddOrder(int cartId)
         {
             try
             {
-                return Ok(await fruiteService.AddFruite(data));
+                return Ok(await purchaseService.AddPurchase(cartId));
             }
             catch (Exception ex)
             {
@@ -57,11 +57,11 @@ namespace FruiteShop.WebApi.Controllers
         }
 
         [HttpPut()]
-        public async Task<IActionResult> UpdateFruite(Fruite data)
+        public async Task<IActionResult> UpdateOrderStatus(Purchase data)
         {
             try
             {
-                return Ok(await fruiteService.UpdateFruite(data));
+                return Ok(await purchaseService.ChangeOrderStatus(data));
             }
             catch (Exception ex)
             {

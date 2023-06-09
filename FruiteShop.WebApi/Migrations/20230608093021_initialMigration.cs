@@ -1,15 +1,12 @@
 ﻿using System;
-using Microsoft.EntityFrameworkCore.Metadata.Conventions;
 using Microsoft.EntityFrameworkCore.Migrations;
 
 #nullable disable
 
 namespace FruiteShop.WebApi.Migrations
 {
-    /// <inheritdoc />
     public partial class initialMigration : Migration
     {
-        /// <inheritdoc />
         protected override void Up(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.CreateTable(
@@ -40,7 +37,8 @@ namespace FruiteShop.WebApi.Migrations
                     PricePerKG = table.Column<double>(type: "float", nullable: false),
                     Availibility = table.Column<double>(type: "float", nullable: false),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
-                    LastModified = table.Column<DateTime>(type: "datetime2", nullable: true)
+                    LastModified = table.Column<DateTime>(type: "datetime2", nullable: true),
+                    ImgUrl = table.Column<string>(type: "nvarchar(max)", nullable: true)
                 },
                 constraints: table =>
                 {
@@ -79,7 +77,8 @@ namespace FruiteShop.WebApi.Migrations
                     Password = table.Column<string>(type: "nvarchar(max)", nullable: true),
                     IsActive = table.Column<bool>(type: "bit", nullable: false),
                     Address = table.Column<string>(type: "nvarchar(max)", nullable: true),
-                    Pincode = table.Column<int>(type: "int", nullable: false)
+                    Pincode = table.Column<int>(type: "int", nullable: false),
+                    CreatedOn = table.Column<DateTime>(type: "datetime2", nullable: false)
                 },
                 constraints: table =>
                 {
@@ -133,9 +132,29 @@ namespace FruiteShop.WebApi.Migrations
                 name: "IX_Orders_PurchaseId",
                 table: "Orders",
                 column: "PurchaseId");
+
+            migrationBuilder.Sql(@"INSERT INTO [dbo].[Users]
+                                   ([Name]
+                                   ,[Phone]
+                                   ,[Email]
+                                   ,[UserType]
+                                   ,[Password]
+                                   ,[IsActive]
+                                   ,[Address]
+                                   ,[Pincode]
+                                   ,[CreatedOn])
+                             VALUES
+                                   ('Manoj'
+                                   ,'8987876765'
+                                   ,'manoj@123.com'
+                                   ,'Admin'
+                                   ,'1234'
+                                   ,1
+                                   ,'#123/3 Ekalvya Layout, Mysore 570009'
+                                   ,570009
+                                   ,GETDATE())");
         }
 
-        /// <inheritdoc />
         protected override void Down(MigrationBuilder migrationBuilder)
         {
             migrationBuilder.DropTable(

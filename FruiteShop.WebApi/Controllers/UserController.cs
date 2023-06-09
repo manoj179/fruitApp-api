@@ -31,7 +31,20 @@ namespace FruiteShop.WebApi.Controllers
             }
         }
 
-        [HttpGet("/login/{username}/{password}")]
+        [HttpGet("add/{a}/{b}")]
+        public IActionResult AddNumber(int a, int b)
+        {
+            try
+            {
+                return Ok(new { result = (a+b) });
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ExceptionHandler().GetExceptionMessage(ex));
+            }
+        }
+
+        [HttpGet("login/{username}/{password}")]
         public async Task<IActionResult> Login(string username,string password)
         {
             try
@@ -44,7 +57,7 @@ namespace FruiteShop.WebApi.Controllers
             }
         }
 
-        [HttpGet("/getUserById/{id}")]
+        [HttpGet("getUserById/{id}")]
         public async Task<IActionResult> GetUserById(int id)
         {
             try
@@ -76,6 +89,20 @@ namespace FruiteShop.WebApi.Controllers
             try
             {
                 return Ok(await userService.UpdateUser(Data));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ExceptionHandler().GetExceptionMessage(ex));
+            }
+        }
+
+
+        [HttpGet("UpdateUserStatus/{id}/{status}")]
+        public async Task<IActionResult> UpdateUserStatus(int id,string status)
+        {
+            try
+            {
+                return Ok(await userService.UpdateStatus(id,status));
             }
             catch (Exception ex)
             {

@@ -1,6 +1,7 @@
 ﻿using FruiteShop.Abstraction.Interfaces;
 using FruiteShop.Abstraction.Models;
 using FruiteShop.Abstraction.Models.Common;
+using FruiteShop.Service;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -8,21 +9,21 @@ namespace FruiteShop.WebApi.Controllers
 {
     [Route("api/[controller]")]
     [ApiController]
-    public class FruiteController : ControllerBase
+    public class CartController : ControllerBase
     {
-        private readonly IFruite fruiteService;
+        private readonly ICart cartService;
 
-        public FruiteController(IFruite fruiteService)
+        public CartController(ICart cartService)
         {
-            this.fruiteService = fruiteService;
+            this.cartService = cartService;
         }
 
-        [HttpGet]
-        public async Task<IActionResult> GetFruitesList()
+        [HttpGet("GetCartById/{id}")]
+        public async Task<IActionResult> GetCartById(int id)
         {
             try
             {
-                return Ok(await fruiteService.GetFruitesList());
+                return Ok(await cartService.GetCartListByID(id));
             }
             catch (Exception ex)
             {
@@ -30,12 +31,12 @@ namespace FruiteShop.WebApi.Controllers
             }
         }
 
-        [HttpGet("{id}")]
-        public async Task<IActionResult> GetFruiteById(int id)
+        [HttpGet("GetCartByUserId/{userId}")]
+        public async Task<IActionResult> GetCartByUserId(int userId)
         {
             try
             {
-                return Ok(await fruiteService.GetFruiteById(id));
+                return Ok(await cartService.GetCartListByUserID(userId));
             }
             catch (Exception ex)
             {
@@ -44,11 +45,11 @@ namespace FruiteShop.WebApi.Controllers
         }
 
         [HttpPost()]
-        public async Task<IActionResult> AddFruite([FromForm]Fruite data)
+        public async Task<IActionResult> AddCart(Cart data)
         {
             try
             {
-                return Ok(await fruiteService.AddFruite(data));
+                return Ok(await cartService.AddCart(data));
             }
             catch (Exception ex)
             {
@@ -56,12 +57,12 @@ namespace FruiteShop.WebApi.Controllers
             }
         }
 
-        [HttpPut()]
-        public async Task<IActionResult> UpdateFruite(Fruite data)
+        [HttpDelete()]
+        public async Task<IActionResult> RemoveCart(int id)
         {
             try
             {
-                return Ok(await fruiteService.UpdateFruite(data));
+                return Ok(await cartService.RemoveCartItem(id));
             }
             catch (Exception ex)
             {

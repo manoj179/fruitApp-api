@@ -64,6 +64,9 @@ namespace FruiteShop.WebApi.Migrations
                     b.Property<double>("Availibility")
                         .HasColumnType("float");
 
+                    b.Property<string>("ImgUrl")
+                        .HasColumnType("nvarchar(max)");
+
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");
 

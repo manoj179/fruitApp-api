@@ -19,5 +19,7 @@ namespace FruiteShop.Abstraction.Interfaces
         Task<ResponseObject> AddUser(User Data);
 
         Task<ResponseObject> UpdateUser(User User);
+
+        Task<ResponseObject> UpdateStatus(int id, string status);
     }
 }

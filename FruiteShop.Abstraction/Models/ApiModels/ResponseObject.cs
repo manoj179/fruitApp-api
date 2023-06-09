@@ -14,6 +14,6 @@ namespace FruiteShop.Abstraction.Models.ApiModels
 
         public string Exception { get; set; }
 
-        public object Data { get; set; }
+        public dynamic Data { get; set; }
     }
 }

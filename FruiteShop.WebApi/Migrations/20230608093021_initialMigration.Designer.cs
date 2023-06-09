@@ -12,8 +12,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FruiteShop.WebApi.Migrations
 {
     [DbContext(typeof(FruiteContext))]
-    [Migration("20230531061702_userEntityChange")]
-    partial class userEntityChange
+    [Migration("20230608093021_initialMigration")]
+    partial class initialMigration
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
@@ -65,6 +65,9 @@ namespace FruiteShop.WebApi.Migrations
 
                     b.Property<double>("Availibility")
                         .HasColumnType("float");
+
+                    b.Property<string>("ImgUrl")
+                        .HasColumnType("nvarchar(max)");
 
                     b.Property<bool>("IsActive")
                         .HasColumnType("bit");

@@ -1,7 +1,11 @@
-﻿using FruiteShop.Abstraction.Interfaces;
+﻿using Azure.Storage.Blobs;
+using Azure.Storage.Blobs.Models;
+using FruiteShop.Abstraction.Interfaces;
 using FruiteShop.Abstraction.Models;
 using FruiteShop.Abstraction.Models.ApiModels;
+using Microsoft.AspNetCore.Http;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
 using System;
 using System.Collections.Generic;
 using System.Linq;
@@ -13,13 +17,14 @@ namespace FruiteShop.Service
     public class FruiteService : IFruite
     {
         private readonly FruiteContext dbContext;
-
         public ResponseObject response;
-
-        public FruiteService(FruiteContext dbContext)
+        private readonly string blobConnectionString;
+        
+        public FruiteService(FruiteContext dbContext,IConfiguration configuration)
         {
             this.dbContext = dbContext;
             response= new ResponseObject();
+            blobConnectionString = configuration.GetConnectionString("AzureBlobConnetionString");
         }
 
         public async Task<ResponseObject> GetFruitesList()
@@ -47,6 +52,7 @@ namespace FruiteShop.Service
 
         public async Task<ResponseObject> AddFruite(Fruite data)
         {
+            data.ImgUrl = await UploadImageToAzureBlob(data.ImgFile);
             dbContext.Fruites.Add(data);
             await dbContext.SaveChangesAsync();
 
@@ -71,6 +77,29 @@ namespace FruiteShop.Service
                 response.Data = data.Id;
             }
             return response;
+        }
+
+        private async Task<string> UploadImageToAzureBlob(IFormFile file)
+        {
+            string blobUrl = string.Empty;
+
+            if (file != null)
+            {
+                var blobContainer = new BlobContainerClient(blobConnectionString, "fruitsimage");
+                var containerResponseInfo = await blobContainer.CreateIfNotExistsAsync();
+                if (containerResponseInfo!=null && containerResponseInfo.GetRawResponse().Status == 201)
+                    await blobContainer.SetAccessPolicyAsync(Azure.Storage.Blobs.Models.PublicAccessType.Blob);
+
+                var blobClient = blobContainer.GetBlobClient(file.FileName+Guid.NewGuid());
+                using(var fileStream = file.OpenReadStream())
+                {
+                    await blobClient.UploadAsync(fileStream, new BlobHttpHeaders { ContentType = file.ContentType});
+                }
+
+                blobUrl = blobClient.Uri.ToString();
+            }
+
+            return blobUrl;
         }
     }
 }

@@ -33,9 +33,18 @@ namespace FruiteShop.Service
             }
             else
             {
-                userData.Password = null;
-                response.Data = userData;
-                response.Status = true;
+                if (!userData.IsActive)
+                {
+                    response.Status = false;
+                    response.Message = "User is Inactive";
+                }
+                else
+                {
+                    userData.Password = null;
+                    response.Data = userData;
+                    response.Status = true;
+                }
+               
             }
 
             return response;
@@ -98,6 +107,28 @@ namespace FruiteShop.Service
                 response.Status = true;
                 dbContext.Users.Update(User);
                 await dbContext.SaveChangesAsync();
+            }
+
+            return response;
+        }
+
+        public async Task<ResponseObject> UpdateStatus(int id, string status)
+        {
+            if (id != 0)
+            {
+                var user = dbContext.Users.First(m => m.Id == id);
+
+                user.IsActive = status == "Active" ? true : false;
+
+                dbContext.Users.Update(user);
+                await dbContext.SaveChangesAsync();
+
+                response.Status = true;
+            }
+            else
+            {
+                response.Status = false;
+                response.Message = "Invalid user data";
             }
 
             return response;
