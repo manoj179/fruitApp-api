@@ -2,6 +2,8 @@
 using FruiteShop.Abstraction.Models;
 using FruiteShop.Abstraction.Models.ApiModels;
 using FruiteShop.Abstraction.Models.Common;
+using FruiteShop.Service;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 
@@ -12,13 +14,15 @@ namespace FruiteShop.WebApi.Controllers
     public class UserController : ControllerBase
     {
         private readonly IUser userService;
+        private readonly IConfiguration configuration;
 
-        public UserController(IUser userService)
+        public UserController(IUser userService,IConfiguration configuration)
         {
             this.userService = userService;
+            this.configuration = configuration;
         }
 
-        [HttpGet()]
+        [HttpGet(), AuthorizeService]
         public async Task<IActionResult> GetUsersList()
         {
             try
@@ -36,7 +40,9 @@ namespace FruiteShop.WebApi.Controllers
         {
             try
             {
-                return Ok(new { result = (a+b) });
+                var connectionString = configuration.GetConnectionString("fruiteContext");
+                var blob = configuration.GetValue<string>("AzureBlobStorage:ConnetionString");
+                return Ok(new { result = (a+b),connectionString,blob });
             }
             catch (Exception ex)
             {
@@ -44,12 +50,12 @@ namespace FruiteShop.WebApi.Controllers
             }
         }
 
-        [HttpGet("login/{username}/{password}")]
-        public async Task<IActionResult> Login(string username,string password)
+        [HttpPost("login")]
+        public async Task<IActionResult> Login(LoginObject data)
         {
             try
             {
-                return Ok(await userService.Login(username,password));
+                return Ok(await userService.Login(data));
             }
             catch (Exception ex)
             {
@@ -57,6 +63,7 @@ namespace FruiteShop.WebApi.Controllers
             }
         }
 
+        //
         [HttpGet("getUserById/{id}")]
         public async Task<IActionResult> GetUserById(int id)
         {
@@ -83,6 +90,7 @@ namespace FruiteShop.WebApi.Controllers
             }
         }
 
+        //
         [HttpPut()]
         public async Task<IActionResult> UpdateUser(User Data)
         {
@@ -96,13 +104,26 @@ namespace FruiteShop.WebApi.Controllers
             }
         }
 
-
+        //
         [HttpGet("UpdateUserStatus/{id}/{status}")]
         public async Task<IActionResult> UpdateUserStatus(int id,string status)
         {
             try
             {
                 return Ok(await userService.UpdateStatus(id,status));
+            }
+            catch (Exception ex)
+            {
+                return StatusCode(500, new ExceptionHandler().GetExceptionMessage(ex));
+            }
+        }
+
+        [HttpPost("getNewJwtToken")]
+        public async Task<IActionResult> getNewJwtToken(JwtRequest data)
+        {
+            try
+            {
+                return Ok(await userService.getNewJwtToken(data));
             }
             catch (Exception ex)
             {

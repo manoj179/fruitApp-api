@@ -4,6 +4,7 @@ using FruiteShop.Abstraction.Models;
 using Microsoft.EntityFrameworkCore;
 using Microsoft.EntityFrameworkCore.Infrastructure;
 using Microsoft.EntityFrameworkCore.Metadata;
+using Microsoft.EntityFrameworkCore.Migrations;
 using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 #nullable disable
@@ -11,9 +12,10 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 namespace FruiteShop.WebApi.Migrations
 {
     [DbContext(typeof(FruiteContext))]
-    partial class FruiteContextModelSnapshot : ModelSnapshot
+    [Migration("20240701063744_refreshTokenAdded")]
+    partial class refreshTokenAdded
     {
-        protected override void BuildModel(ModelBuilder modelBuilder)
+        protected override void BuildTargetModel(ModelBuilder modelBuilder)
         {
 #pragma warning disable 612, 618
             modelBuilder

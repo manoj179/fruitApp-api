@@ -1,6 +1,7 @@
 ﻿using FruiteShop.Abstraction.Interfaces;
 using FruiteShop.Abstraction.Models;
 using FruiteShop.Abstraction.Models.Common;
+using Microsoft.AspNetCore.Authorization;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
 

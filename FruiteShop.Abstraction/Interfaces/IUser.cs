@@ -10,7 +10,7 @@ namespace FruiteShop.Abstraction.Interfaces
 {
     public interface IUser
     {
-        Task<ResponseObject> Login(string username, string password);
+        Task<AuthenticateResponse> Login(LoginObject data);
 
         Task<ResponseObject> GetUserList();
 
@@ -21,5 +21,7 @@ namespace FruiteShop.Abstraction.Interfaces
         Task<ResponseObject> UpdateUser(User User);
 
         Task<ResponseObject> UpdateStatus(int id, string status);
+
+        Task<ResponseObject> getNewJwtToken(JwtRequest userDetails);
     }
 }

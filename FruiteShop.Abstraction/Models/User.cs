@@ -26,6 +26,10 @@ namespace FruiteShop.Abstraction.Models
 
         public int Pincode { get; set; }
 
+        public string RefreshToken { get; set; }
+
+        public DateTime RefreshTokenExpiry { get; set; }
+
         public DateTime CreatedOn { get; set; }
     }
 }

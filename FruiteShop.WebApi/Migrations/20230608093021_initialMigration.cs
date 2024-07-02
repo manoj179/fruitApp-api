@@ -148,7 +148,7 @@ namespace FruiteShop.WebApi.Migrations
                                    ,'8987876765'
                                    ,'manoj@123.com'
                                    ,'Admin'
-                                   ,'1234'
+                                   ,'Manoj@123'
                                    ,1
                                    ,'#123/3 Ekalvya Layout, Mysore 570009'
                                    ,570009

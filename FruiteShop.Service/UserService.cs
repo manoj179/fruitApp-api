@@ -1,10 +1,17 @@
 ﻿using FruiteShop.Abstraction.Interfaces;
 using FruiteShop.Abstraction.Models;
 using FruiteShop.Abstraction.Models.ApiModels;
+using FruiteShop.Abstraction.Models.Common;
+using Microsoft.AspNetCore.SignalR;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.Configuration;
+using Microsoft.IdentityModel.Tokens;
 using System;
 using System.Collections.Generic;
+using System.IdentityModel.Tokens.Jwt;
 using System.Linq;
+using System.Security.Claims;
+using System.Security.Cryptography;
 using System.Text;
 using System.Threading.Tasks;
 
@@ -14,17 +21,26 @@ namespace FruiteShop.Service
     {
         private readonly FruiteContext dbContext;
 
-        private ResponseObject response = new ResponseObject();
+        private readonly static double TokenExpiryInMin = 1;
+        private readonly static double RefreshTokenExpiryInMin = 2;
 
-       
-        public UserService(FruiteContext dbContext)
+        private ResponseObject response = new ResponseObject();
+        private readonly IConfiguration configService;
+        private readonly IHubContext<ChatHub> _hubContext;
+        private readonly HubService _hubService;
+
+        public UserService(FruiteContext dbContext,IConfiguration configService, IHubContext<ChatHub> hubContext, HubService hubService)
         {
             this.dbContext = dbContext;
+            this.configService = configService;
+            this._hubContext = hubContext;
+            _hubService = hubService;
         }
 
-        public async Task<ResponseObject> Login(string username, string password)
+        public async Task<AuthenticateResponse> Login(LoginObject data)
         {
-            var userData = await dbContext.Users.FirstOrDefaultAsync(m => m.Email == username && m.Password == password);
+            var response = new AuthenticateResponse();
+            var userData = await dbContext.Users.Where(m => m.Email == data.EmailAddress && m.Password == data.Password).AsNoTracking().FirstOrDefaultAsync();
 
             if (userData == null)
             {
@@ -40,8 +56,19 @@ namespace FruiteShop.Service
                 }
                 else
                 {
-                    userData.Password = null;
                     response.Data = userData;
+                    response.Data.Password = null;
+                    response.Token = GenerateJwtToken();
+                    response.RefreshToken = GenerateRefreshToken();
+
+                    var userDataToUpdate = await dbContext.Users.FirstAsync(m => m.Email == data.EmailAddress && m.Password == data.Password);
+
+                    userDataToUpdate.RefreshToken = response.RefreshToken;
+                    userDataToUpdate.RefreshTokenExpiry = DateTime.Now.AddMinutes(RefreshTokenExpiryInMin);
+
+                    dbContext.Users.Update(userDataToUpdate);
+                    await dbContext.SaveChangesAsync();
+
                     response.Status = true;
                 }
                
@@ -49,7 +76,6 @@ namespace FruiteShop.Service
 
             return response;
         }
-
 
         public async Task<ResponseObject> AddUser(User Data)
         {
@@ -123,6 +149,11 @@ namespace FruiteShop.Service
                 dbContext.Users.Update(user);
                 await dbContext.SaveChangesAsync();
 
+                ChatHub hub = new ChatHub(_hubService,_hubContext);
+
+                await hub.SendUserStatusChangeNotification(status,id);
+
+
                 response.Status = true;
             }
             else
@@ -132,6 +163,64 @@ namespace FruiteShop.Service
             }
 
             return response;
+        }
+        
+        private string GenerateJwtToken()
+        {
+            var secretKey = new SymmetricSecurityKey(Encoding.UTF8.GetBytes(configService.GetValue<string>("TokenKey")));
+            var signinCredentials = new SigningCredentials(secretKey, SecurityAlgorithms.HmacSha256);
+            var tokeOptions = new JwtSecurityToken(
+                issuer: configService.GetValue<string>("TokenIssuer:Issuer"),
+                audience: configService.GetValue<string>("TokenIssuer:audience"),
+                claims: new List<Claim>(),
+                expires: DateTime.Now.AddMinutes(TokenExpiryInMin),
+                signingCredentials: signinCredentials
+            );
+
+            return new JwtSecurityTokenHandler().WriteToken(tokeOptions);
+        }
+
+        private string GenerateRefreshToken()
+        {
+            var randomNumber = new byte[32];
+            using (var rng = RandomNumberGenerator.Create())
+            {
+                rng.GetBytes(randomNumber);
+                return Convert.ToBase64String(randomNumber);
+            }
+        }
+
+        private async Task<bool> isValidRefreshToken(int id, string refreshToken)
+        {
+            return (await dbContext.Users.AnyAsync(m => m.Id == id && m.RefreshToken == refreshToken && m.RefreshTokenExpiry >= DateTime.Now));
+        }
+
+        public async Task<ResponseObject> getNewJwtToken(JwtRequest userDetails)
+        {
+            response = new ResponseObject();
+
+            if (await isValidRefreshToken(userDetails.Id, userDetails.RefreshToken))
+            {
+                string jwtToken = GenerateJwtToken();
+                string refreshToken = GenerateRefreshToken();
+
+                User userData = await dbContext.Users.FirstAsync(m=>m.Id == userDetails.Id);
+
+                userData.RefreshToken = refreshToken;
+                userData.RefreshTokenExpiry = DateTime.Now.AddMinutes(RefreshTokenExpiryInMin);
+
+                response.Data = new { token = jwtToken, refreshToken };
+                response.Status = true;
+                return response;
+            }
+            else
+            {
+                response.Status = false;
+                response.Message = "Invalid Request OR Refresh Token had expired. Try relogging-in again";
+            }
+
+            return response;
+
         }
     }
 }

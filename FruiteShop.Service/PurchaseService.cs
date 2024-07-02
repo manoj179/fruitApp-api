@@ -131,11 +131,11 @@ namespace FruiteShop.Service
 
                 if(purchase.Status.ToLower().Contains("cancell") || purchase.Status.ToLower().Contains("cancelled"))
                 {
-                    purchase.StatusReason = "Order Is cancelled On " + DateTime.Now.ToString("dd/MM/yyyy hh:MM");
+                    purchase.StatusReason = "Order Is Cancelled On " + DateTime.Now.ToString("dd/MM/yyyy hh:MM");
                 }
                 else
                 {
-                    purchase.StatusReason = "Successfully Develivered";
+                    purchase.StatusReason = "Successfully Delivered";
                     purchase.DeliveredDate = DateTime.Now;
                 }
 

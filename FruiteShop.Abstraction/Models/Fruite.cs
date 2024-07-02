@@ -19,7 +19,7 @@ namespace FruiteShop.Abstraction.Models
 
         public string ImgUrl { get; set; }
 
-        [NotMapped]
-        public IFormFile ImgFile { get; set; } 
+        //[NotMapped]
+        //public IFormFile ImgFile { get; set; } 
     }
 }

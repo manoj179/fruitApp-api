@@ -3,9 +3,12 @@ using FruiteShop.Abstraction.Models.Common;
 using FruiteShop.Abstraction.Models;
 using Microsoft.AspNetCore.Http;
 using Microsoft.AspNetCore.Mvc;
+using Microsoft.AspNetCore.Authorization;
+using FruiteShop.Service;
 
 namespace FruiteShop.WebApi.Controllers
 {
+    [AuthorizeService]
     [Route("api/[controller]")]
     [ApiController]
     public class PurchaseController : ControllerBase
